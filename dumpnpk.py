@@ -79,7 +79,7 @@ def parse_npk(filename):
 	print "   first 4:", unpack("BBBB",header[62+dsize+24:62+dsize+28]), unpack("BBBB",header[62+dsize+32:62+dsize+36])
 	print ""
 
-	data = data[62+dsize+40:]
+	data = data[62+dsize:]
 	res=[]
 	while len(data)>6:
 		type = unpack("H", data[:2])[0]
