@@ -134,4 +134,6 @@ if __name__ == "__main__":
 							type = "dir"
 						if type == 129:
 							type = "fil"
+						if type == 161:
+							type = "sym"
 						print type, perm, k["file"], tim
