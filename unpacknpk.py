@@ -137,6 +137,10 @@ if __name__ == "__main__":
 							f.write(k["data"])
 							f.close()
 							os.chmod(k["file"], int(perm))
+						if type == 161:
+							type = "sym"
+							os.symlink(k["data"],k["file"])
+							# os.chmod(k["file"], int(perm))
 						if perm == 164:
 							perm = "nx"
 						if perm == 237:

@@ -125,7 +125,10 @@ if __name__ == "__main__":
 					print "Files in package:"
 					data = parse_data(j["contents"])
 					for k in data:
+						add = ''
 						perm, type, z1, z2, tim = unpack("BBHII", k["header"][:12])
+						if perm == 255:
+							perm = "al"
 						if perm == 237:
 							perm = "ex"
 						if perm == 164:
@@ -136,4 +139,5 @@ if __name__ == "__main__":
 							type = "fil"
 						if type == 161:
 							type = "sym"
-						print type, perm, k["file"], tim
+							add='=> '+k["data"]
+						print type, perm, k["file"], add, tim
