@@ -56,10 +56,14 @@ def create_data(directory):
 			data = ""
 			mode = os.stat(ii)[stat.ST_MODE]
 			modestr = pack("H", mode)
+			rtype = 65
+			perm = 237
 		elif os.path.islink(ii):
 			data = os.readlink(ii)
 			dsize = len(data)
 			# type=161(A1), perm=255(FF)
+			rtype = 161
+			perm = 255
 			modestr = '\xFF\xA1'
 		else:
 			f = open(ii, "r")
@@ -67,7 +71,13 @@ def create_data(directory):
 			f.close()
 			dsize = len(data)
 			mode = os.stat(ii)[stat.ST_MODE]
-			modestr = pack("H", mode)
+			rtype = 129
+			if mode & stat.S_IXUSR:
+				perm = 237
+			else:
+				perm = 164
+
+		modestr = pack("BB", perm, rtype)
 
 		tim = os.stat(ii)[stat.ST_MTIME]
 
