@@ -39,13 +39,14 @@ def get_contents(directory):
 	for i in os.listdir(directory):
 		ii = os.path.join(directory, i)
 		res.append(i)
-		if os.path.isdir(ii):
+		if os.path.isdir(ii) and not os.path.islink(ii):
 			for j in get_contents(ii):
 				res.append(os.path.join(i, j))
 	return res
 
 def create_data(directory):
 	res = ""
+	print directory
 	contents = get_contents(directory)
 	contents.sort()
 	for i in contents:
@@ -78,8 +79,11 @@ def create_data(directory):
 				perm = 164
 
 		modestr = pack("BB", perm, rtype)
-
-		tim = os.stat(ii)[stat.ST_MTIME]
+		
+		try:
+			tim = os.stat(ii)[stat.ST_MTIME]
+		except OSError:
+			tim = 0
 
 		header = modestr + '\x00\x00'+ '\x00\x00\x00\x00' + pack("I", tim)
 		header += VER + BUILD + '\x00\x00\x00\x00'
