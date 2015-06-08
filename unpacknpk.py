@@ -59,9 +59,9 @@ def parse_npk(filename):
 	data = f.read()
 	f.close()
 
-	header = data[:62]
-	dsize = unpack("I", header[58:62])[0]	# Description size
-	header += data[62:62+dsize+40]
+	header = data[:66]
+	dsize = unpack("I", header[62:66])[0]	# Description size
+	header += data[66:66+dsize+40]
 
 	print repr(header[38:58])
 	print "Magic:", repr(header[0:4]), "should be:", repr('\x1e\xf1\xd0\xba')
@@ -70,23 +70,27 @@ def parse_npk(filename):
 	print "Short description:", header[14:30]
 	print "Revision, unknown, Minor, Major:", repr(header[30:34]), unpack("BBBB", header[30:34])
 	print "Build time:", repr(header[34:38]), ctime(unpack("I", header[34:38])[0])
-	print "Some other numbers:", unpack("IIHHH", header[38:52]), "should be: (0, 0, 16, 4, 0)"
-	print "Architecture:", header[52:56]
-	print "Another number:", unpack("H", header[56:58]), "should be: (2,)"
-	print "Long description:", repr(header[62:62+dsize])
+	print "new padding?:", repr(header[38:42])
+	print "Some other numbers:", unpack("IIHHH", header[42:56]), "should be: (0, 2, 16, 4, 0)"
+	print "Architecture:", header[56:60]
+	print "Another number:", unpack("H", header[60:62]), "should be: (2,)"
+	print "Long description:", repr(header[66:66+dsize])
 #	print "Next 24 chars:", repr(header[62+dsize:62+dsize+24])
 #	print "    should be:", repr('\x03\x00"\x00\x00\x00\x01\x00system\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
 #	print "Separators:", repr(header[62+dsize+24:62+dsize+32]), repr(header[62+dsize+32:62+dsize+40])
 #	print "   first 4:", unpack("BBBB",header[62+dsize+24:62+dsize+28]), unpack("BBBB",header[62+dsize+32:62+dsize+36])
 #	print ""
 
-	data = data[62+dsize:]
+	data = data[66+dsize:]
 	res=[]
 	while len(data)>6:
 		type = unpack("H", data[:2])[0]
 		size = unpack("I", data[2:6])[0]
 		print "Found data of type:", type, "size:", size
 		contents = data[6:6+size]
+		#print contents
+		if type == 3:
+			print "   Contents (system):", repr(contents)
 		if type == 4:
 			contents = zlib.decompress(contents)
 			print "   Uncompressing data..."
@@ -94,12 +98,15 @@ def parse_npk(filename):
 			print "   Contents (oninstall):", repr(contents)
 		if type == 8:
 			print "   Contents (onuninstall):", repr(contents)
+		#if type == 9:
+		#	print "   Contents (sig?):", repr(contents)
 		res.append({"type": type, "size": size, "contents": contents})
 		data = data[6+size:]
 	print ""
 
 	print "Returning the raw header and the rest of the file (each part in a list)"
 	print ""
+	#print res
 
 	return header, res
 
@@ -122,6 +129,11 @@ if __name__ == "__main__":
 		for i in sys.argv[1:]:
 			header, res = parse_npk(i)
 			for j in res:
+				if j["type"] == 21:
+					print "SquashFS in package, extracting 'squashfs', use unsquashfs to extract."
+					f = open("squashfs", "w")
+					f.write(j["contents"])
+					f.close()
 				if j["type"] == 4:
 					print "Files in package:"
 					data = parse_data(j["contents"])
