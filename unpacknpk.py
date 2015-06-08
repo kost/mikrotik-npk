@@ -59,7 +59,7 @@ def parse_npk(filename):
 	data = f.read()
 	f.close()
 
-	if unpack("I", data[46:50])[0] == 2:
+	if data[10] == "$":
 		# Switch to newer npk format
 		print "Version 6 npk reader"
 
@@ -115,8 +115,6 @@ def parse_npk(filename):
 	while len(data)>6:
 		type = unpack("H", data[:2])[0]
 		size = unpack("I", data[2:6])[0]
-		if type == 21:
-			size = len(data)
 		print "Found data of type:", type, "size:", size
 		contents = data[6:6+size]
 		#print contents
